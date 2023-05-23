@@ -1,0 +1,77 @@
+{% extends 'layout/layout.html' %}
+
+{% block content %}
+	<div class="p-3 shadow overflow-auto" style="height: calc(100vh - 80px)">
+		{{ players }}
+		<table class="table table-bordered table-striped">
+			<thead>
+				<tr>
+					<!-- <td>Name</td>
+					<td>Team</td>
+					<td>Games played</td>
+					<td>Plate apperances</td>
+					<td>At-bats</td>
+					<td>Runs scored</td>
+					<td>Home runs</td>
+					<td>RBI</td>
+					<td>SB</td>
+					<td>AVG</td>
+					<td>OBP</td>
+					<td>SLG</td>
+					<td>OPS</td>
+					<td>ISO</td>
+					<td>K%</td>
+					<td>BB%</td>
+					<td>K%-BB%</td>
+					<td>Whiff%</td> -->
+				</tr>
+			</thead>
+			<tbody id="players_data">
+			</tbody>
+		</table>
+	</div>
+
+	<script>
+		$(document).ready(function() {
+			$.post('/get', {type: 'players'}, function(data) {
+				const res = JSON.parse(data);
+
+                if(res.length) {
+                    var txt = "";
+
+                    res.map((item, index) => {
+						var hittingStat = item['hittingstat']
+						var k = (parseFloat(hittingStat['strikeouts']) / parseFloat(hittingStat['plateappearances']) * 100);
+						var bb = (parseFloat(hittingStat['baseonballs']) / parseFloat(hittingStat['plateappearances']) * 100);
+
+                        txt += "<tr>\n";
+                        txt += "<td>" + (index + 1) + "</td>\n";
+                        txt += "<td>" + item['fullname'] + "</td>\n";
+                        txt += "<td>" + item['team'] + "</td>\n";
+                        txt += "<td>" + hittingStat['gamesplayed'] + "</td>\n";
+                        txt += "<td>" + hittingStat['plateappearances'] + "</td>\n";
+                        txt += "<td>" + hittingStat['atbats'] + "</td>\n";
+                        txt += "<td>" + hittingStat['runs'] + "</td>\n";
+                        txt += "<td>" + hittingStat['homeruns'] + "</td>\n";
+                        txt += "<td>" + hittingStat['rbi'] + "</td>\n";
+                        txt += "<td>" + hittingStat['stolenbases'] + "</td>\n";
+                        txt += "<td>" + hittingStat['avg'] + "</td>\n";
+                        txt += "<td>" + hittingStat['obp'] + "</td>\n";
+                        txt += "<td>" + hittingStat['slg'] + "</td>\n";
+                        txt += "<td>" + hittingStat['ops'] + "</td>\n";
+                        txt += "<td>" + (hittingStat['slg'] - hittingStat['avg']) + "</td>\n";
+                        txt += "<td>" + (k) + "</td>\n";
+                        txt += "<td>" + (bb) + "</td>\n";
+                        txt += "<td>" + (k - bb) + "</td>\n";
+                        txt += "<td>" + hittingStat['baseOnBalls'] + "</td>\n";
+						txt += "</tr>\n";
+                    })
+
+					console.log(txt)
+                    $('#players_data').html(txt);
+                }
+			})
+			
+		})
+	</script>
+{% endblock %}

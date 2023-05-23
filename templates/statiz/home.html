@@ -1,0 +1,230 @@
+{% extends 'layout/layout.html' %}
+{% load static %}
+
+{% block customcss %}
+<style>
+.triangle {
+	stroke-dasharray: 17;
+	animation: dash 2.5s cubic-bezier(0.35, 0.04, 0.63, 0.95) infinite;
+}
+
+@keyframes dash {
+	to {
+	stroke-dashoffset: 136;
+	}  
+}
+
+.loading {
+	font-family: 'Orbitron', sans-serif;
+	font-size: 7px;
+	animation: blink .9s ease-in-out infinite alternate;
+}
+
+@keyframes blink {
+	50% {
+	opacity: 0;
+	}
+}
+
+
+.background {
+  padding: 0 25px 25px;
+  position: relative;
+  width: 100%;
+}
+
+.background::after {
+  content: '';
+  background: #60a9ff;
+  background: -moz-linear-gradient(top, #60a9ff 0%, #4394f4 100%);
+  background: -webkit-linear-gradient(top, #60a9ff 0%,#4394f4 100%);
+  background: linear-gradient(to bottom, #60a9ff 0%,#4394f4 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#60a9ff', endColorstr='#4394f4',GradientType=0 );
+  height: 350px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+}
+
+@media (min-width: 900px) {
+  .background {
+    padding: 0 0 25px;
+  }
+}
+
+.container {
+  margin: 0 auto;
+  padding: 50px 0 0;
+  max-width: 960px;
+  width: 100%;
+}
+
+.panel {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px 25px;
+  position: relative;
+  width: 100%;
+  z-index: 10;
+}
+
+.schedule_table {
+  box-shadow: 0px 10px 13px -6px rgba(0, 0, 0, 0.08), 0px 20px 31px 3px rgba(0, 0, 0, 0.09), 0px 8px 20px 7px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 900px) {
+  .schedule_table {
+    flex-direction: column;
+  }
+}
+
+.btn-info-m {
+  border: 1px solid #9dd1ff;
+  border-radius: 5px;
+  color: #348EFE;
+  display: inline-block;
+  margin: 5px 0;
+  padding: 5px 10px;
+  text-decoration: none;
+  transition: all 150ms ease-in-out;
+}
+
+.btn-info-m:hover,
+.btn-info-m:focus {
+  background-color: #e1f1ff;
+}
+
+.btn-info-m.is-featured {
+  background-color: #48aaff;
+  color: #fff;
+}
+
+.btn-info-m.is-featured:hover,
+.btn-info-m.is-featured:active {
+  background-color: #269aff;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+	<div class="background">
+		<div class="container">
+			<div class="panel schedule_table" style="position: relative; min-height: calc(100vh - 80px);">
+				<div id="loading" class="w-100 h-100" style="position: absolute; top: 0px; display: none; z-index: 10;">
+					<div class="w-100 h-100" style="position: absolute; background-color: #ffffffa0;"></div>
+					<div class="d-flex justify-content-center align-items-center h-100">
+						<svg width="200" height="200" viewBox="0 0 40 60">
+							<polygon class="triangle" fill="none" stroke="#000" stroke-width="1" points="16,1 32,32 1,32"/>
+							<text class="loading" x="0" y="45" fill="#000" >Loading...</text>
+						</svg>
+					</div>
+				</div>
+				<div class="flex justify-between align-items-center my-2 md:my-4">
+					<h2 class="text-2xl d-none d-sm-block">Schedule</h2>
+					<div class="flex align-items-center">
+						<input class="border-solid border-sky-300 border-1 p-1 me-1" type="date" id="schedule_date" min="2012-01-01" >
+						<button class="btn-info-m" onclick="predict()">Predict</button>
+					</div>
+				</div>
+				<div class="overflow-auto" style="position: relative;">
+					<table class="table table-auto table-bordered th:p-3">
+						<thead>
+							<tr class="align-middle text-center">
+								<th class="p-2">Home Team</th>
+								<th class="p-2">Status</th>
+								<th class="p-2">Away Team</th>
+								<th class="p-2">Time</th>
+								<th style="min-width: 100px;">Predict</th>
+							</tr>
+						</thead>
+						<tbody id="match_data">
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block customjs %}
+	<script>
+		$(document).ready(function() {
+			$.post('/get', {type: 'train'});
+
+			$("#schedule_date").val(new Date().toISOString().slice(0, 10));
+			getSchedule($("#schedule_date").val());
+			$("#schedule_date").on('change', function(event) {
+				getSchedule($(this).val());
+			})
+		})
+
+		function visibleLoading(visible) {
+			if(visible)
+				$("#loading").fadeIn(500);
+			else
+				$("#loading").fadeOut(500);
+		}
+
+		function predict() {
+			visibleLoading(true);
+
+			$.post('/get', {type: 'predict', date: $("#schedule_date").val()}, function(data) {
+				const res = JSON.parse(data);
+
+				if(res.length) {
+					visibleLoading(false);
+					res.map((item, index) => {
+						if(item['home'] == -1)
+							return;
+						var txt = '<span class="badge text-bg-danger">' + item['home'] + '</span> : ';
+						txt += '<span class="badge text-bg-info">' + item['away'] + '</span>';
+						$("#match_data tr:eq("+index+") td:eq(4)").html(txt);
+					})
+				}
+			})
+		}
+
+		function getSchedule(date) {
+			$.post('/get', {type: 'schedule', date: date}, function(data) {
+				const res = JSON.parse(data);
+				console.log(res);
+				if(res.totalGames) {
+					console.log(res);
+					var txt = "";
+
+					res.dates[0].games.map((item, index) => {
+						txt += "<tr class='align-middle text-center'>\n";
+						txt += "<td class='p-2'>" + item['teams']['home']['team']['name'] + "</td>\n";
+						
+						txt += "<td class='p-2'>";
+						if(item['status']['abstractGameState'] == 'Final') {
+							if(item['status']['detailedState'] == 'Postponed') {
+								txt += "Postponed: "
+								txt += item['status']['reason']
+							} else {
+								txt += item['teams']['home']['score'];
+								txt += ' : ';
+								txt += item['teams']['away']['score'];
+							}
+						} else {
+							txt += item['status']['abstractGameState'];
+						}
+						txt += "</td>";
+
+						txt += "<td class='p-2'>" + item['teams']['away']['team']['name'] + "</td>\n";
+						txt += "<td class='p-2'>" + new Date(item['gameDate']).toTimeString().slice(0, 5) + "</td>\n";
+						txt += "<td></td>\n"
+						// txt += "<td style='width: max-content'><span class='badge text-bg-danger'>2</span> : <span class='badge text-bg-info'>3</span></td>\n";
+						txt += "</tr>\n";
+					})
+					$("#match_data").html(txt);
+				}
+			})
+		}
+	</script>
+{% endblock %}

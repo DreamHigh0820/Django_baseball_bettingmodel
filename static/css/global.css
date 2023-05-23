@@ -1,0 +1,35 @@
+
+h2 {
+  margin: 0 0 15px;
+}
+
+.panel {
+  border-width: 0;
+  border-top: 6px solid #bfdbfe;
+  border-radius: 0;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.4);
+  padding: 30px;
+}
+.panel .table {
+  border-radius: 0;
+}
+.panel .table thead {
+  background-color: #93c5fd;
+  border-top: 1px solid #60a5fa;
+  color: white;
+}
+.panel .table thead th {
+  border: 1px solid #60a5fa;
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.15);
+}
+.panel .table th {
+  font-weight: 700;
+}
+.panel .table tbody {
+  border: 1px solid #ccc;
+}
+.panel .table tbody th, .panel > .table tbody td {
+  border: 1px solid #ccc;
+}
+
+/*# sourceMappingURL=global.css.map */

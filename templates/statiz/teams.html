@@ -1,0 +1,218 @@
+{% extends 'layout/layout.html' %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-md-4 col-sm-6 col-xs-12 overflow-auto" style="height: calc(100vh - 80px)">
+			<h4 class="text-center my-2">Teams</h4>
+			<div class="p-3 shadow overflow-auto">
+				<div id="teams_data" class="list-group">
+					
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-8 col-sm-6 col-xs-0 overflow-auto" style="height: calc(100vh - 80px)">
+			<h4 class="text-center my-2">Players</h4>
+			<div class="p-3 shadow overflow-auto">
+				<table class="table table-hover table-bordered table-striped" id="playerlist">
+					<thead>
+						<tr>
+							<th>No</th>
+							<th>Name</th>
+							<th>Position</th>
+							<th>Status</th>
+						</tr>
+					</thead>
+					<tbody id="players_data">
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Modal -->
+	<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-5" id="exampleModalLabel">Player Information</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table table-bordered" id="player_detail">
+						<tr class="text-center">
+							<td>Name</td>
+							<td></td>
+						</tr>
+						<!-- <tr class="text-center">
+							<td>Team</td>
+							<td></td>
+						</tr class="text-center"> -->
+						<tr class="text-center">
+							<td>Games played</td>
+							<td></td>
+						</tr class="text-center">
+						<tr class="text-center">
+							<td>Plate apperance</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>At-bats</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Runs scored</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Home runs</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Runs batted in</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Stolen bases</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Batting average</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>On-base percentage</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Slugging percentage</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>On-base plus slugging</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Isolated power</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Strikeout rate</td>
+							<td></td>
+						</tr>
+						<tr class="text-center">
+							<td>Walk rate</td>
+							<td></td>
+						</tr>
+						<!-- <tr class="text-center">
+							<td>Whiff rate</td>
+							<td></td>
+						</tr> -->
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+        var currentTeam = '';
+
+		$(document).ready(function() {
+			getTeamList();
+		})
+
+        function setCurrentTeam(teamId) {
+			if(currentTeam == teamId)	return;
+
+            currentTeam = teamId;
+			$("a").removeClass('active');
+			$("[teamCode=" + teamId + "]").addClass('active');
+            getTeamPlayers(currentTeam);
+        }
+
+        function getTeamList() {
+            $.post('/get', {type: 'teams'}, function(data) {
+				const res = JSON.parse(data);
+				if(res.teams && res.teams.length) {
+                    var txt = "";
+                    res.teams.map((item, index) => {
+                        // txt += "<tr teamcode=" + item['teamCode'] + ">\n";
+                        // txt += "<td>" + (index + 1) + "</td>\n";
+                        // txt += "<td>" + (item['name']) + "</td>\n";
+                        // txt += "</tr>\n";
+						txt += "<a teamCode=" + item['id'] + " class='list-group-item list-group-item-action' onclick='setCurrentTeam(" + item['id'] + ")'>" + item['name'] + "</a>\n"
+                    })
+                    $("#teams_data").html(txt);
+
+                    if(currentTeam == '')
+                        setCurrentTeam(res.teams[0]['id']);
+				} else {
+                    setCurrentTeam('');
+                }
+			})
+        }
+
+        function getTeamPlayers(teamId) {
+            $.post('/get', {type: 'players', teamId: teamId}, function(data) {
+                const res = JSON.parse(data);
+
+                if(res.roster && res.roster.length) {
+                    const players = res.roster;
+                    var txt = "";
+
+                    players.map((item, index) => {
+                        txt += "<tr id='" + item['person']['id'] + "'>\n";
+                        txt += "<td>" + (index + 1) + "</td>\n";
+                        txt += "<td>" + item['person']['fullName'] + "</td>\n";
+                        txt += "<td>" + item['position']['name'] + "</td>\n";
+                        txt += "<td>" + item['status']['description'] + "</td>\n";
+						txt += "</tr>\n";
+                    })
+
+                    $('#players_data').html(txt);
+
+					$('#playerlist tr').on('click', showPlayerInformation);
+                }
+            })
+        }
+
+		function showPlayerInformation(event) {
+			$("#exampleModal").modal('show');
+			playerId = $(this).attr('id');
+			playerName = $(this).find("td:eq(1)").text();
+			
+			$.post('/get', {type: 'player', id: playerId}, function(data) {
+                const res = JSON.parse(data);
+				console.log(res);
+				if(res['hitting']) {
+					var txt = ""
+					var hittingStat = res['hitting'];
+					var k = (parseFloat(hittingStat['strikeouts']) / parseFloat(hittingStat['plateappearances']) * 100);
+					var bb = (parseFloat(hittingStat['baseonballs']) / parseFloat(hittingStat['plateappearances']) * 100);
+
+					txt += "<tr>\n";
+					$('#player_detail tr:eq(0) td:eq(1)').html(playerName);
+					// $('#player_detail tr:eq(1) td:eq(1)').html(item['team']);
+					$('#player_detail tr:eq(1) td:eq(1)').html(hittingStat['gamesplayed']);
+					$('#player_detail tr:eq(2) td:eq(1)').html(hittingStat['plateappearances']);
+					$('#player_detail tr:eq(3) td:eq(1)').html(hittingStat['atbats']);
+					$('#player_detail tr:eq(4) td:eq(1)').html(hittingStat['runs']);
+					$('#player_detail tr:eq(5) td:eq(1)').html(hittingStat['homeruns']);
+					$('#player_detail tr:eq(6) td:eq(1)').html(hittingStat['rbi']);
+					$('#player_detail tr:eq(7) td:eq(1)').html(hittingStat['stolenbases']);
+					$('#player_detail tr:eq(8) td:eq(1)').html(hittingStat['avg']);
+					$('#player_detail tr:eq(9) td:eq(1)').html(hittingStat['obp']);
+					$('#player_detail tr:eq(10) td:eq(1)').html(hittingStat['slg']);
+					$('#player_detail tr:eq(11) td:eq(1)').html(hittingStat['ops']);
+					$('#player_detail tr:eq(12) td:eq(1)').html((hittingStat['slg'] - hittingStat['avg']));
+					$('#player_detail tr:eq(13) td:eq(1)').html((k));
+					$('#player_detail tr:eq(14) td:eq(1)').html((bb));
+					$('#player_detail tr:eq(15) td:eq(1)').html((k - bb));
+					// $('#player_detail tr:eq(17) td:eq(1)').html(hittingStat['baseOnBalls']);
+					txt += "</tr>\n";
+				}
+            });
+		}
+	</script>
+{% endblock %}

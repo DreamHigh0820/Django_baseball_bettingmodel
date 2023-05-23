@@ -1,0 +1,244 @@
+@import url('https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&display=swap');
+
+@mixin centerWrap{
+	height: 100%;
+	text-align: center;
+}
+
+@mixin centerAfter{
+		&:after{
+		content: '';
+		display: inline-block;
+		height: 100%;
+		vertical-align: middle;
+	}
+}
+
+@mixin centerContents{
+	display: inline-block;
+	vertical-align: middle;
+}
+
+$headerColor: #FFDD00;
+$dayActive: #FF7B00;
+
+html,body{
+	width: 100%;
+	height: 100%;
+	font-family: 'Mukta', sans-serif;
+	background-color: #FFA200;
+}
+
+a{
+	color: inherit;
+	text-decoration: none;
+}
+
+#wrap{
+	position: relative;
+	width: 100%;
+ 	@include centerWrap;
+	@include centerAfter;
+}
+
+.container{
+	width: 30%;
+	min-width: 350px;
+	height: 40%;
+	min-height: 150px;
+	margin: 50px 0;
+	@include centerContents;
+	background:#fff;
+	border-radius: 10px;
+	box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
+	@include centerAfter;
+	
+	&__wrap{
+		@include centerContents;
+	}
+	
+	&__tit{
+		margin-bottom: 20px;
+		text-align: center;
+		font-size: 24px;
+		font-weight: 600;
+	}
+}
+
+.input{
+	&__list{
+		position: relative;
+		display: inline-block;
+		max-width: 200px;
+	}
+	
+	&__item{
+		width: 100%;
+		height: 40px;
+		padding-right: 40px;
+		text-align: center;
+		font-size: 18px;
+		border: 1px solid #d1d1d1;
+		border-radius: 5px;
+		box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+		box-sizing: border-box;
+	}
+}
+
+
+.ui-datepicker-trigger {
+   width: 28px;
+	position: absolute;
+	top: 50%;
+	right: 10px;
+	transform: translateY(-50%);
+}
+
+.ui-datepicker {
+    width: 90%;
+    max-width: 360px;
+    position: fixed;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+    padding: 1em;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.4);
+    z-index: 200  !important;
+    display: none;
+
+    &-header {
+        position: relative;
+        width: 100%;
+		   	height: 46px;
+        display: flex;
+        justify-content: center;
+        padding: 4px 0;
+        background-color: $headerColor;
+        border-top: 1px solid $headerColor;
+        border-bottom: 1px solid $headerColor;
+			  border-radius: 5px;
+    }
+
+    &-prev,
+    &-next {
+        position: absolute;
+        width: 26px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: url('https://cdn-icons-png.flaticon.com/512/709/709586.png') no-repeat center;
+        background-size: 18px;
+
+        span {
+            font-size: 0;
+        }
+    }
+
+    &-prev {
+        left: 10px;
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    &-next {
+        right: 10px;
+    }
+
+    &-title {
+        width: 100%;
+        max-width: 160px;
+        display: flex;
+    }
+
+    &-year,
+    &-month {
+        margin: 0 12px;
+			  padding-right: 8px;
+        text-align: center;
+        font-size: 20px;
+        color: #333;
+        border: none;
+
+        background: {
+            color: $headerColor;
+            image: url('https://cdn-icons-png.flaticon.com/512/709/709586.png');
+            repeat: no-repeat;
+            position: center right 2px;
+        }
+    }
+
+    &-year {
+        background-position: center right 0;
+    }
+
+    &-calendar {
+        width: 100%;
+        text-align: center;
+        font-size: 18px;
+
+        thead th {
+            padding: 16px 0 12px 0;
+            font-weight: 500;
+        }
+
+        td {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            padding: 5px 2px;
+        }
+
+        a {
+            display: block;
+            line-height: 1.4;
+        }
+
+        .ui-datepicker-other-month {
+            color: #B1A7A6;
+            background-color: #F5F3F4;
+        }
+    }
+
+    &-today {
+        color: $dayActive;
+        font-weight: 800;
+    }
+
+    .ui-state-active {
+        color: #fff;
+			  font-weight: 800;
+
+        &::after {
+						content: '';
+						display: block;
+						width: 36px;
+						height: 36px;
+            position: absolute;
+						top: 50%;
+						left: 50%;
+						transform: translate(-50%, -50%);
+            background-color: $dayActive;
+            border-radius: 50%;
+            z-index: -1;
+        }
+    }
+}
+
+.datepicker-layer {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0 !important;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 200  !important;
+    display: none;
+
+    &.show {
+        display: block;
+    }
+}
+
+
+
+
